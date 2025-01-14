@@ -70,13 +70,11 @@ jobs:
     steps:
       # Step 9: Download the report artifact
       - name: Download HTML Report Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: jmeter-report
 
       # Step 10: Deploy the HTML Report to GitHub Pages
-      - name: Deploy HTML Report to GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          folder: ${{ github.workspace }}/report  # Ensure the path to the report is correct
