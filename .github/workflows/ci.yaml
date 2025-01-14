@@ -79,4 +79,4 @@ jobs:
         uses: actions/deploy-pages@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          artifact_name: jmeter-report
+          folder: ${{ github.workspace }}/report  # Ensure the path to the report is correct
