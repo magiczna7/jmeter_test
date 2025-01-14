@@ -32,13 +32,13 @@ jobs:
           tar -xzf apache-jmeter-${{ env.JMETER_VERSION }}.tgz
           sudo mv apache-jmeter-${{ env.JMETER_VERSION }} /opt/jmeter
 
-      # Step 4: Set alias for jmeter to avoid using the full path
-      - name: Set alias for JMeter
+      # Step 4: Add JMeter to PATH
+      - name: Add JMeter to PATH
         run: |
-          echo "alias jmeter='/opt/jmeter/bin/jmeter'" >> ~/.bashrc
-          source ~/.bashrc
+          echo "Adding JMeter to PATH"
+          echo "/opt/jmeter/bin" >> $GITHUB_ENV
 
-      # Step 5: Verify JMeter version using the alias
+      # Step 5: Verify JMeter version
       - name: Verify JMeter version
         run: |
           jmeter --version
