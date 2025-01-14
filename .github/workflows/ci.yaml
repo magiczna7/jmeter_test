@@ -1,4 +1,4 @@
-name: Run JMeter Tests and Publish JMeter Dashboard HTML Report
+name: Run JMeter Tests and Publish Report
 
 on:
   push:
@@ -9,14 +9,14 @@ on:
 
 permissions:
   id-token: write
-  contents: write
+  contents: write 
 
 jobs:
   run-jmeter-tests:
     runs-on: ubuntu-latest
 
     env:
-      JMETER_VERSION: 5.5  # Define the JMeter version as a variable
+      JMETER_VERSION: 5.5 # Define the JMeter version as a variable
 
     steps:
       # Step 1: Checkout the repository
@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@v3
 
       # Step 2: Install Java 17
-      - name: Set up Javaa 17
+      - name: Set up Java 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
@@ -52,45 +52,31 @@ jobs:
         run: |
           jmeter -n -t ${{ github.workspace }}/test_plans/demo.jmx -l ${{ github.workspace }}/test_plans/results.jtl
 
-      # Step 7: Remove existing report folder (if exists) to avoid overwrite error
-      - name: Remove existing report folder
-        run: |
-          rm -rf ${{ github.workspace }}/report
-
-      # Step 8: Generate JMeter Dashboard HTML Report from Results
-      - name: Generate JMeter Dashboard Report
+      # Step 7: Generate HTML Report from JMeter Results
+      - name: Generate HTML Report
         run: |
           jmeter -g ${{ github.workspace }}/test_plans/results.jtl -e -o ${{ github.workspace }}/report
 
-      # Step 9: Ensure index.html exists in the report folder (check folder structure)
-      - name: Check if index.html exists
-        run: |
-          if [ ! -f ${{ github.workspace }}/report/index.html ]; then
-            echo "index.html not found in the report folder!"
-            exit 1
-          fi
-          echo "index.html exists, proceeding with artifact upload."
-
-      # Step 10: Upload index.html file as Artifact (to be used for deployment)
-      - name: Upload JMeter Dashboard HTML file as Artifact
+      # Step 8: Upload the report folder as artifact (to be used for deployment)
+      - name: Upload HTML Report as Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: jmeter-dashboard-html  # Name the artifact as 'jmeter-dashboard-html'
-          path: ${{ github.workspace }}/report/index.html  # Only the index.html file from the report folder
+          name: jmeter-report
+          path: ${{ github.workspace }}/report
 
   deploy-to-pages:
     runs-on: ubuntu-latest
     needs: run-jmeter-tests
     steps:
-      # Step 11: Download the JMeter Dashboard HTML file artifact
-      - name: Download JMeter Dashboard HTML file Artifact
+      # Step 9: Download the report artifact
+      - name: Download HTML Report Artifact
         uses: actions/download-artifact@v3
         with:
-          name: jmeter-dashboard-html  # Match the artifact name from the previous step
+          name: jmeter-report
 
-      # Step 12: Deploy the HTML file to GitHub Pages
-      - name: Deploy JMeter Dashboard HTML file to GitHub Pages
+      # Step 10: Deploy the HTML Report to GitHub Pages
+      - name: Deploy HTML Report to GitHub Pages
         uses: actions/deploy-pages@v4
         with:
-          branch: gh-pages  # Specify the gh-pages branch for deployment
-          folder: ${{ github.workspace }}/report  # Use the downloaded HTML file's path (index.html)
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifact_name: jmeter-report
