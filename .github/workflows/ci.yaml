@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@v3
 
       # Step 2: Install Java 17
-      - name: Set up Javaa 17
+      - name: Set up Java 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
@@ -57,7 +57,7 @@ jobs:
         run: |
           jmeter -g ${{ github.workspace }}/test_plans/results.jtl -e -o ${{ github.workspace }}/report
 
-      # Step 8: Upload the report folder as artifact (to be used for deployment)
+      # Step 8: Upload the report folder as an artifact (to be used for deployment)
       - name: Upload HTML Report as Artifact
         uses: actions/upload-artifact@v3
         with:
@@ -79,4 +79,4 @@ jobs:
         uses: actions/deploy-pages@v4
         with:
           branch: gh-pages
-          folder: report
+          folder: ${{ github.workspace }}/report
