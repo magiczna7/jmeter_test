@@ -61,7 +61,7 @@ jobs:
       - name: Upload HTML Report as Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: jmeter-report
+          name: github-pages  # Change the artifact name to match what deploy-pages expects
           path: ${{ github.workspace }}/report
 
   deploy-to-pages:
@@ -72,7 +72,7 @@ jobs:
       - name: Download HTML Report Artifact
         uses: actions/download-artifact@v3
         with:
-          name: jmeter-report
+          name: github-pages  # Use the same name as the uploaded artifact
 
       # Step 10: Deploy the HTML Report to GitHub Pages
       - name: Deploy HTML Report to GitHub Pages
