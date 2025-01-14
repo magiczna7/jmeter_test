@@ -14,36 +14,50 @@ jobs:
       JMETER_VERSION: 5.5 # Define the JMeter version as a variable
 
     steps:
+      # Step 1: Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Step 2: Install Java 17
       - name: Set up Java 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
+      # Step 3: Install JMeter
       - name: Install JMeter
         run: |
           wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${{ env.JMETER_VERSION }}.tgz
           tar -xzf apache-jmeter-${{ env.JMETER_VERSION }}.tgz
           sudo mv apache-jmeter-${{ env.JMETER_VERSION }} /opt/jmeter
 
+      # Step 4: Verify JMeter version
       - name: Verify JMeter version
         run: |
           /opt/jmeter/bin/jmeter --version
 
+      # Step 5: Debug installed JMeter extras folder
       - name: Debug installed JMeter extras folder
         run: |
           echo "Listing files in JMeter extras folder:"
           ls -l /opt/jmeter/extras
 
+      # Step 6: Run default Test.jmx from JMeter extras folder
       - name: Run default Test.jmx from JMeter extras folder
         run: |
-          /opt/jmeter/bin/jmeter -n -t /opt/jmeter/extras/Test.jmx -l /opt/jmeter/extras/results.jtl
+          /opt/jmeter/bin/jmeter -n -t /opt/jmeter/extras/Test.jmx -l /opt/jmeter/extras/results_default.jtl
 
+      # Step 7: Run demo.jmx from test_plans/ folder in the repository
+      - name: Run demo.jmx from test_plans folder
+        run: |
+          /opt/jmeter/bin/jmeter -n -t ${{ github.workspace }}/test_plans/demo.jmx -l ${{ github.workspace }}/test_plans/results_demo.jtl
+
+      # Step 8: Upload test results
       - name: Upload test results
         uses: actions/upload-artifact@v3
         with:
           name: jmeter-test-results
-          path: /opt/jmeter/extras/results.jtl
+          path: |
+            /opt/jmeter/extras/results_default.jtl
+            ${{ github.workspace }}/test_plans/results_demo.jtl
