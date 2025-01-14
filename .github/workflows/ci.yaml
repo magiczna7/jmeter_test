@@ -11,15 +11,14 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      JMETER_VERSION: 5.5  # Define the JMeter version as a variable
-      PATH: /opt/jmeter/bin:$PATH  # Add JMeter to the PATH for all steps
+      JMETER_VERSION: 5.5 # Define the JMeter version as a variable
 
     steps:
       # Step 1: Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Set up Java 17
+      # Step 2: Install Java 17
       - name: Set up Java 17
         uses: actions/setup-java@v3
         with:
@@ -33,27 +32,34 @@ jobs:
           tar -xzf apache-jmeter-${{ env.JMETER_VERSION }}.tgz
           sudo mv apache-jmeter-${{ env.JMETER_VERSION }} /opt/jmeter
 
-      # Step 4: Verify JMeter version
-      - name: Verify JMeter version
-        run: jmeter --version
+      # Step 4: Set alias for jmeter to avoid using the full path
+      - name: Set alias for JMeter
+        run: |
+          echo "alias jmeter='/opt/jmeter/bin/jmeter'" >> ~/.bashrc
+          source ~/.bashrc
 
-      # Step 5: Debug installed JMeter extras folder
+      # Step 5: Verify JMeter version using the alias
+      - name: Verify JMeter version
+        run: |
+          jmeter --version
+
+      # Step 6: Debug installed JMeter extras folder
       - name: Debug installed JMeter extras folder
         run: |
           echo "Listing files in JMeter extras folder:"
           ls -l /opt/jmeter/extras
 
-      # Step 6: Run default Test.jmx from JMeter extras folder
+      # Step 7: Run default Test.jmx from JMeter extras folder
       - name: Run default Test.jmx from JMeter extras folder
         run: |
           jmeter -n -t /opt/jmeter/extras/Test.jmx -l /opt/jmeter/extras/results_default.jtl
 
-      # Step 7: Run demo.jmx from test_plans folder in the repository
+      # Step 8: Run demo.jmx from test_plans/ folder in the repository
       - name: Run demo.jmx from test_plans folder
         run: |
           jmeter -n -t ${{ github.workspace }}/test_plans/demo.jmx -l ${{ github.workspace }}/test_plans/results_demo.jtl
 
-      # Step 8: Upload test results
+      # Step 9: Upload test results
       - name: Upload test results
         uses: actions/upload-artifact@v3
         with:
