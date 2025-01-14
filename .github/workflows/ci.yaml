@@ -57,7 +57,7 @@ jobs:
         run: |
           jmeter -g ${{ github.workspace }}/test_plans/results.jtl -e -o ${{ github.workspace }}/report
 
-      # Step 8: Upload the report folder as an artifact (to be used for deployment)
+      # Step 8: Upload the report folder as artifact (to be used for deployment)
       - name: Upload HTML Report as Artifact
         uses: actions/upload-artifact@v3
         with:
@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: run-jmeter-tests
     steps:
-      # Step 9: Download the report artifact
+      # Step 9: Download HTML Report Artifact
       - name: Download HTML Report Artifact
         uses: actions/download-artifact@v3
         with:
