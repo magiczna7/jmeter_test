@@ -14,48 +14,42 @@ jobs:
       JMETER_VERSION: 5.5 # Define the JMeter version as a variable
 
     steps:
-      # Step 1: Check out the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Install Java 17
       - name: Set up Java 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # Step 3: Install Apache JMeter
       - name: Install JMeter
         run: |
           wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${{ env.JMETER_VERSION }}.tgz
           tar -xzf apache-jmeter-${{ env.JMETER_VERSION }}.tgz
           sudo mv apache-jmeter-${{ env.JMETER_VERSION }} /opt/jmeter
-          echo "JMeter installed at /opt/jmeter"
 
-      # Step 4: Check JMeter version
       - name: Verify JMeter version
         run: |
           /opt/jmeter/bin/jmeter --version
 
-      # Step 5: Run the testing .jmx file from the extras folder
+      - name: Debug file existence
+        run: |
+          echo "Listing files in extras folder:"
+          ls -l ${{ github.workspace }}/extras
+
       - name: Run testing .jmx file from extras folder
         run: |
-          /opt/jmeter/bin/jmeter -n -t extras/Test.jmx -l extras/results.jtl
-        working-directory: ${{ github.workspace }}
+          /opt/jmeter/bin/jmeter -n -t ${{ github.workspace }}/extras/Test.jmx -l ${{ github.workspace }}/extras/results.jtl
 
-      # Step 6: Run the test.jmx file from the Test_plans/ folder
-      - name: Run demo.jmx file from Test_plans/ folder
+      - name: Run test.jmx file from Test_plans/ folder
         run: |
-          /opt/jmeter/bin/jmeter -n -t test_plans/demo.jmx -l test_plans/results.jtl
-        working-directory: ${{ github.workspace }}
+          /opt/jmeter/bin/jmeter -n -t ${{ github.workspace }}/Test_plans/test.jmx -l ${{ github.workspace }}/Test_plans/results.jtl
 
-      # Step 7: Save results as artifacts (optional)
       - name: Upload test results
         uses: actions/upload-artifact@v3
         with:
           name: jmeter-test-results
           path: |
             extras/results.jtl
-            test_plans/results.jtl
-
+            Test_plans/results.jtl
