@@ -1,4 +1,4 @@
-name: Run JMeter Tests and Publish JMeter Dashboard Report
+name: Run JMeter Tests and Publish JMeter Dashboard HTML Report
 
 on:
   push:
@@ -71,26 +71,26 @@ jobs:
           fi
           echo "index.html exists, proceeding with artifact upload."
 
-      # Step 10: Upload JMeter Dashboard Report as Artifact (to be used for deployment)
-      - name: Upload JMeter Dashboard Report as Artifact
+      # Step 10: Upload index.html file as Artifact (to be used for deployment)
+      - name: Upload JMeter Dashboard HTML file as Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: github-pages  # Use the artifact name as 'github-pages' (expected by deploy-pages)
-          path: ${{ github.workspace }}/report
+          name: jmeter-dashboard-html  # Name the artifact as 'jmeter-dashboard-html'
+          path: ${{ github.workspace }}/report/index.html  # Only the index.html file from the report folder
 
   deploy-to-pages:
     runs-on: ubuntu-latest
     needs: run-jmeter-tests
     steps:
-      # Step 11: Download JMeter Dashboard Report Artifact
-      - name: Download JMeter Dashboard Report Artifact
+      # Step 11: Download the JMeter Dashboard HTML file artifact
+      - name: Download JMeter Dashboard HTML file Artifact
         uses: actions/download-artifact@v3
         with:
-          name: github-pages  # Match the artifact name from the previous step
+          name: jmeter-dashboard-html  # Match the artifact name from the previous step
 
-      # Step 12: Deploy the JMeter Dashboard Report to GitHub Pages
-      - name: Deploy JMeter Dashboard Report to GitHub Pages
+      # Step 12: Deploy the HTML file to GitHub Pages
+      - name: Deploy JMeter Dashboard HTML file to GitHub Pages
         uses: actions/deploy-pages@v4
         with:
           branch: gh-pages  # Specify the gh-pages branch for deployment
-          folder: ${{ github.workspace }}/report  # Deploy the entire report folder
+          folder: ${{ github.workspace }}/report  # Use the downloaded HTML file's path (index.html)
