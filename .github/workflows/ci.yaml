@@ -32,6 +32,7 @@ jobs:
           tar -xzf apache-jmeter-${{ env.JMETER_VERSION }}.tgz
           sudo mv apache-jmeter-${{ env.JMETER_VERSION }} /opt/jmeter
           echo "export PATH=/opt/jmeter/bin:\$PATH" >> $GITHUB_ENV
+          export PATH=/opt/jmeter/bin:$PATH # Make PATH change effective for this step
 
       # Step 4: Verify JMeter version
       - name: Verify JMeter version
