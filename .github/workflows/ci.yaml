@@ -26,34 +26,38 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # Step 3: Install JMeter
+      # Step 3: Ensure tar is installed
+      - name: Install tar
+        run: sudo apt-get install -y tar
+
+      # Step 4: Install JMeter
       - name: Install JMeter
         run: |
           wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${{ env.JMETER_VERSION }}.tgz
           tar -xzf apache-jmeter-${{ env.JMETER_VERSION }}.tgz
           mv apache-jmeter-${{ env.JMETER_VERSION }} /opt/jmeter
 
-      # Step 4: Verify JMeter version
+      # Step 5: Verify JMeter version
       - name: Verify JMeter version
         run: jmeter --version
 
-      # Step 5: Debug installed JMeter extras folder
+      # Step 6: Debug installed JMeter extras folder
       - name: Debug installed JMeter extras folder
         run: |
           echo "Listing files in JMeter extras folder:"
           ls -l /opt/jmeter/extras
 
-      # Step 6: Run default Test.jmx from JMeter extras folder
+      # Step 7: Run default Test.jmx from JMeter extras folder
       - name: Run default Test.jmx from JMeter extras folder
         run: |
           jmeter -n -t /opt/jmeter/extras/Test.jmx -l /opt/jmeter/extras/results_default.jtl
 
-      # Step 7: Run demo.jmx from test_plans folder in the repository
+      # Step 8: Run demo.jmx from test_plans folder in the repository
       - name: Run demo.jmx from test_plans folder
         run: |
           jmeter -n -t ${{ github.workspace }}/test_plans/demo.jmx -l ${{ github.workspace }}/test_plans/results_demo.jtl
 
-      # Step 8: Upload test results
+      # Step 9: Upload test results
       - name: Upload test results
         uses: actions/upload-artifact@v3
         with:
