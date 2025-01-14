@@ -36,7 +36,7 @@ jobs:
       - name: Add JMeter to PATH
         run: |
           echo "Adding JMeter to PATH"
-          echo "/opt/jmeter/bin" >> $GITHUB_ENV
+          echo "PATH=$PATH:/opt/jmeter/bin" >> $GITHUB_ENV
 
       # Step 5: Verify JMeter version
       - name: Verify JMeter version
