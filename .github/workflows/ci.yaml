@@ -11,7 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      JMETER_VERSION: 5.5 # Define the JMeter version as a variable
+      JMETER_VERSION: 5.5  # Define the JMeter version as a variable
+      PATH: /opt/jmeter/bin:$PATH  # Add JMeter to the PATH for all steps
 
     steps:
       # Step 1: Checkout the repository
@@ -25,19 +26,16 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # Step 3: Install JMeter and add it to PATH
+      # Step 3: Install JMeter
       - name: Install JMeter
         run: |
           wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${{ env.JMETER_VERSION }}.tgz
           tar -xzf apache-jmeter-${{ env.JMETER_VERSION }}.tgz
-          sudo mv apache-jmeter-${{ env.JMETER_VERSION }} /opt/jmeter
-          echo "export PATH=/opt/jmeter/bin:\$PATH" >> $GITHUB_ENV
-          export PATH=/opt/jmeter/bin:$PATH # Make PATH change effective for this step
+          mv apache-jmeter-${{ env.JMETER_VERSION }} /opt/jmeter
 
       # Step 4: Verify JMeter version
       - name: Verify JMeter version
-        run: |
-          jmeter --version
+        run: jmeter --version
 
       # Step 5: Debug installed JMeter extras folder
       - name: Debug installed JMeter extras folder
