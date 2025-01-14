@@ -1,4 +1,4 @@
-name: Run JMeter Tests
+name: Run JMeter Tests and Publish Report
 
 on:
   push:
@@ -35,7 +35,6 @@ jobs:
       # Step 4: Add JMeter to PATH
       - name: Add JMeter to PATH
         run: |
-          echo "Adding JMeter to PATH"
           echo "PATH=$PATH:/opt/jmeter/bin" >> $GITHUB_ENV
 
       # Step 5: Verify JMeter version
@@ -43,27 +42,28 @@ jobs:
         run: |
           jmeter --version
 
-      # Step 6: Debug installed JMeter extras folder
-      - name: Debug installed JMeter extras folder
+      # Step 6: Run JMeter Test Plan and Generate Results
+      - name: Run JMeter Test Plan and Generate Results
         run: |
-          echo "Listing files in JMeter extras folder:"
-          ls -l /opt/jmeter/extras
+          jmeter -n -t ${{ github.workspace }}/test_plans/demo.jmx -l ${{ github.workspace }}/test_plans/results.jtl
 
-      # Step 7: Run default Test.jmx from JMeter extras folder
-      - name: Run default Test.jmx from JMeter extras folder
+      # Step 7: Generate HTML Report from JMeter Results
+      - name: Generate HTML Report
         run: |
-          jmeter -n -t /opt/jmeter/extras/Test.jmx -l /opt/jmeter/extras/results_default.jtl
+          jmeter -g ${{ github.workspace }}/test_plans/results.jtl -e -o ${{ github.workspace }}/report
 
-      # Step 8: Run demo.jmx from test_plans/ folder in the repository
-      - name: Run demo.jmx from test_plans folder
-        run: |
-          jmeter -n -t ${{ github.workspace }}/test_plans/demo.jmx -l ${{ github.workspace }}/test_plans/results_demo.jtl
+      # Step 8: Deploy HTML Report to GitHub Pages
+      - name: Deploy HTML Report to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          folder: report
 
-      # Step 9: Upload test results
+      # Step 9: Upload test results (optional)
       - name: Upload test results
         uses: actions/upload-artifact@v3
         with:
           name: jmeter-test-results
           path: |
-            /opt/jmeter/extras/results_default.jtl
-            ${{ github.workspace }}/test_plans/results_demo.jtl
+            ${{ github.workspace }}/test_plans/results.jtl
+            ${{ github.workspace }}/report
