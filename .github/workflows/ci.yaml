@@ -52,12 +52,17 @@ jobs:
         run: |
           jmeter -n -t ${{ github.workspace }}/test_plans/demo.jmx -l ${{ github.workspace }}/test_plans/results.jtl
 
-      # Step 7: Generate JMeter Dashboard HTML Report from Results
+      # Step 7: Remove existing report folder (if exists) to avoid overwrite error
+      - name: Remove existing report folder
+        run: |
+          rm -rf ${{ github.workspace }}/report
+
+      # Step 8: Generate JMeter Dashboard HTML Report from Results
       - name: Generate JMeter Dashboard Report
         run: |
           jmeter -g ${{ github.workspace }}/test_plans/results.jtl -e -o ${{ github.workspace }}/report
 
-      # Step 8: Ensure index.html exists in the report folder (check folder structure)
+      # Step 9: Ensure index.html exists in the report folder (check folder structure)
       - name: Check if index.html exists
         run: |
           if [ ! -f ${{ github.workspace }}/report/index.html ]; then
@@ -66,7 +71,7 @@ jobs:
           fi
           echo "index.html exists, proceeding with artifact upload."
 
-      # Step 9: Upload JMeter Dashboard Report as Artifact (to be used for deployment)
+      # Step 10: Upload JMeter Dashboard Report as Artifact (to be used for deployment)
       - name: Upload JMeter Dashboard Report as Artifact
         uses: actions/upload-artifact@v3
         with:
@@ -77,13 +82,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: run-jmeter-tests
     steps:
-      # Step 10: Download JMeter Dashboard Report Artifact
+      # Step 11: Download JMeter Dashboard Report Artifact
       - name: Download JMeter Dashboard Report Artifact
         uses: actions/download-artifact@v3
         with:
           name: github-pages  # Match the artifact name from the previous step
 
-      # Step 11: Deploy the JMeter Dashboard Report to GitHub Pages
+      # Step 12: Deploy the JMeter Dashboard Report to GitHub Pages
       - name: Deploy JMeter Dashboard Report to GitHub Pages
         uses: actions/deploy-pages@v4
         with:
