@@ -33,23 +33,17 @@ jobs:
         run: |
           /opt/jmeter/bin/jmeter --version
 
-      - name: Debug file existence
+      - name: Debug installed JMeter extras folder
         run: |
-          echo "Listing files in extras folder:"
-          ls -l ${{ github.workspace }}/extras
+          echo "Listing files in JMeter extras folder:"
+          ls -l /opt/jmeter/extras
 
-      - name: Run testing .jmx file from extras folder
+      - name: Run default Test.jmx from JMeter extras folder
         run: |
-          /opt/jmeter/bin/jmeter -n -t ${{ github.workspace }}/extras/Test.jmx -l ${{ github.workspace }}/extras/results.jtl
-
-      - name: Run test.jmx file from Test_plans/ folder
-        run: |
-          /opt/jmeter/bin/jmeter -n -t ${{ github.workspace }}/Test_plans/test.jmx -l ${{ github.workspace }}/Test_plans/results.jtl
+          /opt/jmeter/bin/jmeter -n -t /opt/jmeter/extras/Test.jmx -l /opt/jmeter/extras/results.jtl
 
       - name: Upload test results
         uses: actions/upload-artifact@v3
         with:
           name: jmeter-test-results
-          path: |
-            extras/results.jtl
-            Test_plans/results.jtl
+          path: /opt/jmeter/extras/results.jtl
