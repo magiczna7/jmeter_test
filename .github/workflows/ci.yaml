@@ -7,6 +7,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: write 
+
 jobs:
   run-jmeter-tests:
     runs-on: ubuntu-latest
