@@ -10,7 +10,7 @@ on:
       test-folder:
         description: 'Folder containing test plans to execute (e.g., test_plans/folder1)'
         required: false
-        default: 'test_plans' # Default folder for test plans
+        default: 'test_plans/demo' # Default folder for test plans
 
 permissions:
   id-token: write
@@ -57,7 +57,7 @@ jobs:
         id: set-folder
         run: |
           if [[ -z "${{ github.event.inputs.test-folder }}" ]]; then
-            echo "TEST_FOLDER=test_plans" >> $GITHUB_ENV
+            echo "TEST_FOLDER=test_plans/demo" >> $GITHUB_ENV
           else
             echo "TEST_FOLDER=${{ github.event.inputs.test-folder }}" >> $GITHUB_ENV
           fi
@@ -66,23 +66,22 @@ jobs:
       - name: Run JMeter Test Plans in Selected Folder
         run: |
           echo "Using test folder: $TEST_FOLDER"
+          mkdir -p ${{ github.workspace }}/report
           for test_plan in ${{ github.workspace }}/$TEST_FOLDER/*.jmx; do
             echo "Running test plan: $test_plan"
-            jmeter -n -t "$test_plan" -l "$test_plan.jtl"
-          done
-
-      # Step 8: Generate HTML Reports for Each Test Plan
-      - name: Generate HTML Reports for Each Test Plan
-        run: |
-          mkdir -p ${{ github.workspace }}/report
-          for result_file in ${{ github.workspace }}/$TEST_FOLDER/*.jtl; do
-            report_dir="${result_file%.jtl}-report"
+            result_file="${test_plan%.jmx}.jtl"
+            jmeter -n -t "$test_plan" -l "$result_file"
+            
+            # Generate HTML report for each test plan
+            report_dir="${test_plan%.jmx}-report"
             jmeter -g "$result_file" -e -o "$report_dir"
-            mv "$report_dir" ${{ github.workspace }}/report/
+
+            # Move the generated report into the main report folder
+            mv "$report_dir" ${{ github.workspace }}/report/$(basename "${test_plan%.jmx}")
           done
 
-      # Step 9: Upload all HTML Reports as Artifact
-      - name: Upload HTML Reports as Artifact
+      # Step 8: Upload all HTML Reports as a Single Artifact
+      - name: Upload All HTML Reports as a Single Artifact
         uses: actions/upload-artifact@v3
         with:
           name: jmeter-reports
