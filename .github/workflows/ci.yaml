@@ -10,7 +10,7 @@ on:
       test-folder:
         description: 'Folder containing test plans to execute (e.g., test_plans/folder1)'
         required: true
-        default: 'test_plans/demo'
+        default: 'test_plans/demo.jmx'
 
 permissions:
   id-token: write
