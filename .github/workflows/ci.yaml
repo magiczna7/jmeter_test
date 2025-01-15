@@ -6,17 +6,22 @@ on:
       - main
   pull_request:
   workflow_dispatch:
+    inputs:
+      test-folder:
+        description: 'Folder containing test plans to execute (e.g., test_plans/folder1)'
+        required: true
+        default: 'test_plans/demo'
 
 permissions:
   id-token: write
-  contents: write 
+  contents: write
 
 jobs:
   run-jmeter-tests:
     runs-on: ubuntu-latest
 
     env:
-      JMETER_VERSION: 5.5 # Define the JMeter version as a variable
+      JMETER_VERSION: 5.5
 
     steps:
       # Step 1: Checkout the repository
@@ -47,21 +52,29 @@ jobs:
         run: |
           jmeter --version
 
-      # Step 6: Run JMeter Test Plan and Generate Results
-      - name: Run JMeter Test Plan and Generate Results
+      # Step 6: Run all JMeter Test Plans in the Selected Folder
+      - name: Run JMeter Test Plans in Selected Folder
         run: |
-          jmeter -n -t ${{ github.workspace }}/test_plans/demo.jmx -l ${{ github.workspace }}/test_plans/results.jtl
+          for test_plan in ${{ github.workspace }}/$INPUT_TEST-FOLDER/*.jmx; do
+            echo "Running test plan: $test_plan"
+            jmeter -n -t "$test_plan" -l "$test_plan.jtl"
+          done
 
-      # Step 7: Generate HTML Report from JMeter Results
-      - name: Generate HTML Report
+      # Step 7: Generate HTML Reports for Each Test Plan
+      - name: Generate HTML Reports for Each Test Plan
         run: |
-          jmeter -g ${{ github.workspace }}/test_plans/results.jtl -e -o ${{ github.workspace }}/report
+          mkdir -p ${{ github.workspace }}/report
+          for result_file in ${{ github.workspace }}/$INPUT_TEST-FOLDER/*.jtl; do
+            report_dir="${result_file%.jtl}-report"
+            jmeter -g "$result_file" -e -o "$report_dir"
+            mv "$report_dir" ${{ github.workspace }}/report/
+          done
 
-      # Step 8: Upload the report folder as artifact (to be used for deployment)
-      - name: Upload HTML Report as Artifact
+      # Step 8: Upload all HTML Reports as Artifact
+      - name: Upload HTML Reports as Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: jmeter-report
+          name: jmeter-reports
           path: ${{ github.workspace }}/report
 
   deploy-to-pages:
@@ -75,9 +88,9 @@ jobs:
       - name: Download HTML Report Artifact
         uses: actions/download-artifact@v3
         with:
-          name: jmeter-report
+          name: jmeter-reports
 
-      # Step 10: Deploy the HTML Report to GitHub Pages
+      # Step 10: Deploy the HTML Reports to GitHub Pages
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
