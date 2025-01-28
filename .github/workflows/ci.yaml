@@ -76,20 +76,17 @@ jobs:
             mv "$report_dir" ${{ github.workspace }}/report/$(basename "${test_plan%.jmx}")
           done
 
-      - name: Generate index.html
+      - name: List contents before uploading artifact
         run: |
-          echo "<html><body><h1>JMeter Test Reports</h1><ul>" > ${{ github.workspace }}/report/index.html
-          for dir in ${{ github.workspace }}/report/*/; do
-            dir_name=$(basename "$dir")
-            echo "<li><a href=\"$dir_name/index.html\">$dir_name</a></li>" >> ${{ github.workspace }}/report/index.html
-          done
-          echo "</ul></body></html>" >> ${{ github.workspace }}/report/index.html
+          echo "Contents of report folder:"
+          ls -R ${{ github.workspace }}/report  # List contents of the report folder
 
       - name: Upload All HTML Reports as Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: jmeter-reports  # Name of the artifact
-          path: ${{ github.workspace }}/report  # Ensure the correct path
+          name: jmeter-reports
+          path: ${{ github.workspace }}/report
+          retention-days: 1  # Retention period of 1 day
 
   deploy-to-pages:
     needs: run-jmeter-tests
@@ -103,8 +100,8 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: jmeter-reports  # Ensure the correct artifact name is used
-          path: reports  # Destination folder for reports
+          name: jmeter-reports
+          path: reports  # Ensure it matches the upload path
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
