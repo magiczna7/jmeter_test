@@ -114,3 +114,5 @@ jobs:
       # Step 2: Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
+        with:
+          artifact: jmeter-reports  # Specify the artifact name
