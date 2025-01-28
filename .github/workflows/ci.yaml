@@ -119,6 +119,7 @@ jobs:
           for report_dir in reports/*; do
             if [ -d "$report_dir" ]; then
               report_name=$(basename "$report_dir")
+              # Fix the link to point to /report_name/index.html
               echo "<li><a href=\"$report_name/index.html\">$report_name</a></li>" >> reports/index.html
             fi
           done
@@ -130,7 +131,7 @@ jobs:
         with:
           path: reports
 
-      # Step 5: Deploy the reports to GitHub Pages
+      # Step 5: Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
