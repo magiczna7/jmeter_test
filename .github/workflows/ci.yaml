@@ -10,11 +10,12 @@ on:
       test-folder:
         description: 'Folder containing test plans to execute (e.g., test_plans/folder1)'
         required: false
-        default: 'test_plans' # Default folder for test plans
+        default: 'test_plans'
 
 permissions:
   id-token: write
   contents: write
+  pages: write  # Required for GitHub Pages deployment
 
 jobs:
   run-jmeter-tests:
@@ -80,9 +81,36 @@ jobs:
             mv "$report_dir" ${{ github.workspace }}/report/$(basename "${test_plan%.jmx}")
           done
 
-      # Step 8: Upload all HTML Reports as a Single Artifact
-      - name: Upload All HTML Reports as a Single Artifact
+      # Step 8: Generate an index.html File with Links to Reports
+      - name: Generate index.html
+        run: |
+          echo "<html><body><h1>JMeter Test Reports</h1><ul>" > ${{ github.workspace }}/report/index.html
+          for dir in ${{ github.workspace }}/report/*/; do
+            dir_name=$(basename "$dir")
+            echo "<li><a href=\"$dir_name/index.html\">$dir_name</a></li>" >> ${{ github.workspace }}/report/index.html
+          done
+          echo "</ul></body></html>" >> ${{ github.workspace }}/report/index.html
+
+      # Step 9: Upload All HTML Reports as a Single Artifact
+      - name: Upload All HTML Reports as Artifact
         uses: actions/upload-artifact@v3
         with:
           name: jmeter-reports
           path: ${{ github.workspace }}/report
+
+  deploy-pages:
+    needs: run-jmeter-tests  # Ensure this runs after the tests
+    runs-on: ubuntu-latest
+
+    permissions:
+      pages: write  # Allow GitHub Pages deployment
+      id-token: write  # For OIDC authentication
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
