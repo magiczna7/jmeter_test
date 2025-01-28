@@ -115,4 +115,4 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
         with:
-          artifact: jmeter-reports  # Specify the artifact name
+          artifact_name: jmeter-reports  # Specify the artifact name
