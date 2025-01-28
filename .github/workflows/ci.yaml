@@ -43,7 +43,7 @@ jobs:
         run: |
           wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${{ env.JMETER_VERSION }}.tgz
           tar -xzf apache-jmeter-${{ env.JMETER_VERSION }}.tgz
-          sudo mv apache-jmeter-${{ env.JMETER_VERSION }} /opt/jmeter
+          sudo mv apache-jmeter-${{ env.JMTER_VERSION }} /opt/jmeter
 
       # Step 4: Add JMeter to PATH
       - name: Add JMeter to PATH
@@ -83,7 +83,7 @@ jobs:
             mv "$report_dir" ${{ github.workspace }}/report/$(basename "${test_plan%.jmx}")
           done
 
-      # Step 8: Create a main index.html with a list of all reports
+      # Step 8: Create main index.html with a list of all reports
       - name: Create main index.html
         run: |
           echo "<html><body><h1>JMeter Test Reports</h1><ul>" > ${{ github.workspace }}/report/index.html
@@ -93,17 +93,11 @@ jobs:
           done
           echo "</ul></body></html>" >> ${{ github.workspace }}/report/index.html
 
-      # Step 9: List contents before uploading artifact
-      - name: List contents of the report folder
-        run: |
-          echo "Contents of report folder:"
-          ls -R ${{ github.workspace }}/report  # List contents of the report folder
-
-      # Step 10: Upload All HTML Reports as Artifact
+      # Step 9: Upload All HTML Reports as Artifact (name set to "github-pages" for deployment)
       - name: Upload All HTML Reports as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: jmeter-reports  # Artifact name
+          name: github-pages  # Artifact name to match the requirement for deployment
           path: ${{ github.workspace }}/report  # Path to the reports folder
           retention-days: 1  # Optional retention period (1 day)
 
@@ -120,11 +114,11 @@ jobs:
       id-token: write  # Required for authentication
 
     steps:
-      # Step 1: Download all artifacts (jmeter-reports)
+      # Step 1: Download all artifacts (named "github-pages" to match the deployment requirement)
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: jmeter-reports  # The artifact name to download
+          name: github-pages  # The artifact name that was uploaded in the first job
           path: reports  # Path to download the reports to
 
       # Step 2: Setup Pages
