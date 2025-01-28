@@ -97,7 +97,6 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
     steps:
       # Step 1: Download JMeter report artifacts
       - name: Download JMeter report artifacts
@@ -106,7 +105,7 @@ jobs:
           name: jmeter-reports-${{ github.run_id }}
           path: reports
 
-      # Step 2: Prepare index.html with links to all reports
+      # Step 2: Prepare index.html file with links to all reports
       - name: Prepare index.html file
         run: |
           # Create the index.html with links to all reports
@@ -116,13 +115,19 @@ jobs:
           done
           echo "</ul></body></html>" >> index.html
 
-      # Step 3: Upload the index.html file to GitHub Pages (root of gh-pages branch)
+      # Step 3: Create a temporary folder and move index.html into it
+      - name: Create folder for index.html
+        run: |
+          mkdir -p deploy-folder
+          mv index.html deploy-folder/
+
+      # Step 4: Upload the folder containing index.html to GitHub Pages
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: index.html  # Upload the index.html directly to the root
+          path: deploy-folder  # Upload the folder containing the index.html
 
-      # Step 4: Deploy to GitHub Pages
+      # Step 5: Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
