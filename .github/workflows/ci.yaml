@@ -12,7 +12,7 @@ on:
       test-folder:
         description: 'Folder containing test plans to execute (e.g., test_plans/folder1)'
         required: false
-        default: 'test_plans' # Default folder for test plans
+        default: 'test_plans'  # Default folder for test plans
 
 permissions:
   id-token: write
@@ -82,30 +82,55 @@ jobs:
             mv "$report_dir" ${{ github.workspace }}/report/$(basename "${test_plan%.jmx}")
           done
 
-      # Step 8: Create Main Index Page
-      - name: Create Main Index Page
+      # Step 8: Upload all HTML Reports as a Single Artifact
+      - name: Upload All HTML Reports as a Single Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: jmeter-reports
+          path: ${{ github.workspace }}/report
+          retention-days: 1
+
+  deploy-to-pages:
+    needs: run-jmeter-tests
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # Step 1: Download the artifact containing the reports
+      - name: Download JMeter Reports Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: jmeter-reports
+          path: reports
+
+      # Step 2: Setup GitHub Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      # Step 3: Create the index.html with links to the individual reports
+      - name: Create index.html
         run: |
-          echo "<html><head><title>JMeter Reports</title></head><body><h1>JMeter Test Reports</h1><ul>" > ${{ github.workspace }}/report/index.html
-          for dir in ${{ github.workspace }}/report/*/; do
-            if [ -d "$dir" ]; then
-              test_plan_name=$(basename "$dir")
-              echo "<li><a href='/${test_plan_name}/index.html'>${test_plan_name}</a></li>" >> ${{ github.workspace }}/report/index.html
+          echo "Creating index.html with links to reports..."
+          echo "<html><body><h1>JMeter Test Reports</h1><ul>" > reports/index.html
+          for report_dir in reports/*; do
+            if [ -d "$report_dir" ]; then
+              report_name=$(basename "$report_dir")
+              echo "<li><a href=\"$report_name/index.html\">$report_name</a></li>" >> reports/index.html
             fi
           done
-          echo "</ul></body></html>" >> ${{ github.workspace }}/report/index.html
+          echo "</ul></body></html>" >> reports/index.html
 
-      # Step 9: Upload Reports and Main Index Page
-      - name: Upload Reports and Main Index Page to GitHub Pages
-        run: |
-          mkdir -p $GITHUB_WORKSPACE/jmeter_test/reports
-          cp -r ${{ github.workspace }}/report/* $GITHUB_WORKSPACE/jmeter_test/reports/
-
-      # Step 10: Upload Artifact (for GitHub Pages)
-      - name: Upload Artifact to GitHub Pages
-        uses: actions/upload-pages-artifact@v1
+      # Step 4: Upload the generated reports as a single artifact to GitHub Pages
+      - name: Upload Reports to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: $GITHUB_WORKSPACE/jmeter_test/reports/
+          path: reports
 
-      # Step 11: Deploy to GitHub Pages
+      # Step 5: Deploy the reports to GitHub Pages
       - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
