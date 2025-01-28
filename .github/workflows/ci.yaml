@@ -12,7 +12,7 @@ on:
       test-folder:
         description: 'Folder containing test plans to execute (e.g., test_plans/folder1)'
         required: false
-        default: 'test_plans'
+        default: 'test_plans'  # Default folder for test plans
 
 permissions:
   id-token: write
@@ -27,29 +27,35 @@ jobs:
       JMETER_VERSION: 5.5
 
     steps:
+      # Step 1: Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Step 2: Set up Java 17
       - name: Set up Java 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
+      # Step 3: Install JMeter
       - name: Install JMeter
         run: |
           wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${{ env.JMETER_VERSION }}.tgz
           tar -xzf apache-jmeter-${{ env.JMETER_VERSION }}.tgz
           sudo mv apache-jmeter-${{ env.JMETER_VERSION }} /opt/jmeter
 
+      # Step 4: Add JMeter to PATH
       - name: Add JMeter to PATH
         run: |
           echo "PATH=$PATH:/opt/jmeter/bin" >> $GITHUB_ENV
 
+      # Step 5: Verify JMeter version
       - name: Verify JMeter version
         run: |
           jmeter --version
 
+      # Step 6: Set Test Folder
       - name: Set Test Folder
         id: set-folder
         run: |
@@ -59,6 +65,7 @@ jobs:
             echo "TEST_FOLDER=${{ github.event.inputs.test-folder }}" >> $GITHUB_ENV
           fi
 
+      # Step 7: Run JMeter Test Plans in the Selected Folder
       - name: Run JMeter Test Plans in Selected Folder
         run: |
           echo "Using test folder: $TEST_FOLDER"
@@ -76,48 +83,66 @@ jobs:
             mv "$report_dir" ${{ github.workspace }}/report/$(basename "${test_plan%.jmx}")
           done
 
-      - name: List contents before uploading artifact
+      # Step 8: Create a main index.html with a list of all reports
+      - name: Create main index.html
+        run: |
+          echo "<html><body><h1>JMeter Test Reports</h1><ul>" > ${{ github.workspace }}/report/index.html
+          for report_folder in ${{ github.workspace }}/report/*/; do
+            report_name=$(basename "$report_folder")
+            echo "<li><a href=\"${report_name}/index.html\">$report_name</a></li>" >> ${{ github.workspace }}/report/index.html
+          done
+          echo "</ul></body></html>" >> ${{ github.workspace }}/report/index.html
+
+      # Step 9: List contents before uploading artifact
+      - name: List contents of the report folder
         run: |
           echo "Contents of report folder:"
           ls -R ${{ github.workspace }}/report  # List contents of the report folder
 
+      # Step 10: Upload All HTML Reports as Artifact
       - name: Upload All HTML Reports as Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: jmeter-reports
-          path: ${{ github.workspace }}/report
-          retention-days: 1  # Optional retention period
+          name: jmeter-reports  # Artifact name
+          path: ${{ github.workspace }}/report  # Path to the reports folder
+          retention-days: 1  # Optional retention period (1 day)
 
   deploy-to-pages:
     needs: run-jmeter-tests
     runs-on: ubuntu-latest
 
     environment:
-      name: github-pages  # Specify the environment name
-      url: ${{ steps.deployment.outputs.page_url }}  # Optional, for URL output
+      name: github-pages  # Specify the environment name for GitHub Pages
+      url: ${{ steps.deployment.outputs.page_url }}  # Optional: capture the URL after deployment
 
     permissions:
-      pages: write  # Required to deploy to GitHub Pages
+      pages: write  # Required for GitHub Pages deployment
       id-token: write  # Required for authentication
 
     steps:
+      # Step 1: Download all artifacts (jmeter-reports)
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: jmeter-reports
-          path: reports  # Ensure it matches the upload path
+          name: jmeter-reports  # The artifact name to download
+          path: reports  # Path to download the reports to
 
+      # Step 2: Setup Pages
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      # Step 3: Prepare the reports directory for GitHub Pages
       - name: Prepare reports directory
         run: |
           mkdir -p _site
-          cp reports/*/index.html _site/index.html
+          cp -r reports/*/index.html _site/  # Copy index.html from all the reports folders to _site
+          cp reports/index.html _site/  # Copy the main index.html to _site
 
+      # Step 4: Upload Pages artifact (prepare for deployment)
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
 
+      # Step 5: Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
