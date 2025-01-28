@@ -86,15 +86,19 @@ jobs:
         with:
           name: jmeter-reports
           path: ${{ github.workspace }}/report
-          retention-days: 1  # Retention period of 1 day
+          retention-days: 1  # Optional retention period
 
   deploy-to-pages:
     needs: run-jmeter-tests
     runs-on: ubuntu-latest
 
+    environment:
+      name: github-pages  # Specify the environment name
+      url: ${{ steps.deployment.outputs.page_url }}  # Optional, for URL output
+
     permissions:
-      pages: write  # Required for GitHub Pages deployment
-      id-token: write  # For OIDC authentication
+      pages: write  # Required to deploy to GitHub Pages
+      id-token: write  # Required for authentication
 
     steps:
       - name: Download all artifacts
