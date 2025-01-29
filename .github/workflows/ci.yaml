@@ -1,4 +1,4 @@
-name: Run JMeter Tests and Deploy to GitHub Pagess
+name: Run JMeter Tests and Deploy to GitHub Pages
 
 on:
   push:
@@ -71,7 +71,10 @@ jobs:
             report_dir="${test_plan%.jmx}-report"
             jmeter -g "$result_file" -e -o "$report_dir"
 
-            mv "$report_dir" ${{ github.workspace }}/report/$(basename "${test_plan%.jmx}")
+            # Move the test plan report into a subfolder under reports
+            test_plan_name=$(basename "${test_plan%.jmx}")
+            mkdir -p ${{ github.workspace }}/report/$test_plan_name
+            mv "$report_dir" ${{ github.workspace }}/report/$test_plan_name/
           done
 
       - name: Upload All HTML Reports as a Single Artifact
