@@ -98,7 +98,7 @@ jobs:
       - name: Download JMeter Reports Artifact
         uses: actions/download-artifact@v3
         with:
-          name: jmeter-reports-${{ env.TIMESTAMP }}
+          pattern: jmeter-reports-${{ env.TIMESTAMP }}
           path: reports
 
       - name: Setup Pages
