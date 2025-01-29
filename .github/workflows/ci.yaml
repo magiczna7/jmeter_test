@@ -12,7 +12,7 @@ on:
       test-folder:
         description: 'Folder containing test plans to execute (e.g., test_plans/folder1)'
         required: false
-        default: 'test_plans'  # Default folder for test plans
+        default: 'test_plans'
 
 permissions:
   id-token: write
@@ -21,9 +21,6 @@ permissions:
 jobs:
   run-jmeter-tests:
     runs-on: ubuntu-latest
-
-    outputs:
-      TIMESTAMP: ${{ steps.set-timestamp.outputs.TIMESTAMP }}  # ✅ Correctly expose the TIMESTAMP output
 
     steps:
       - name: Checkout code
@@ -46,14 +43,6 @@ jobs:
 
       - name: Verify JMeter version
         run: jmeter --version
-
-      # ✅ Correctly generate and store the timestamp
-      - name: Set Timestamp
-        id: set-timestamp
-        run: |
-          TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
-          echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
-          echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_OUTPUT  # ✅ Expose TIMESTAMP for later use
 
       - name: Set Test Folder
         run: |
@@ -81,7 +70,7 @@ jobs:
       - name: Upload JMeter Reports as an Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: jmeter-reports-${{ steps.set-timestamp.outputs.TIMESTAMP }}  # ✅ Use correctly stored timestamp
+          name: jmeter-reports
           path: ${{ github.workspace }}/report
           retention-days: 1
 
@@ -96,13 +85,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Debug Timestamp Value
-        run: echo "TIMESTAMP from previous job: ${{ needs.run-jmeter-tests.outputs.TIMESTAMP }}"
-
       - name: Download JMeter Reports Artifact
         uses: actions/download-artifact@v3
         with:
-          name: jmeter-reports-${{ needs.run-jmeter-tests.outputs.TIMESTAMP }}  # ✅ Correctly reference timestamped artifact
+          name: jmeter-reports
           path: reports
 
       - name: Setup Pages
