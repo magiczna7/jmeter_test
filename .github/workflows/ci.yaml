@@ -26,7 +26,7 @@ jobs:
       JMETER_VERSION: 5.5
 
     outputs:
-      TIMESTAMP: ${{ steps.set-timestamp.outputs.timestamp }}  # Expose TIMESTAMP as a job output
+      TIMESTAMP: ${{ steps.set-timestamp.outputs.TIMESTAMP }}  # Corrected output reference
 
     steps:
       - name: Checkout code
@@ -49,11 +49,9 @@ jobs:
           echo "PATH=$PATH:/opt/jmeter/bin" >> $GITHUB_ENV
 
       - name: Verify JMeter version
-        run: |
-          jmeter --version
+        run: jmeter --version
 
       - name: Set Test Folder
-        id: set-folder
         run: |
           if [[ -z "${{ github.event.inputs.test-folder }}" ]]; then
             echo "TEST_FOLDER=test_plans" >> $GITHUB_ENV
@@ -62,11 +60,11 @@ jobs:
           fi
 
       - name: Set Timestamp
-        id: set-timestamp  # Assign an ID so we can reference this later
+        id: set-timestamp  # Assign an ID to reference outputs
         run: |
           TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
           echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
-          echo "::set-output name=timestamp::$TIMESTAMP"  # Make TIMESTAMP an output for this job
+          echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_OUTPUT  # Fix: Correctly set job output
 
       - name: Run JMeter Test Plans in Selected Folder
         run: |
