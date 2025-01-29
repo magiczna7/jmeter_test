@@ -1,4 +1,4 @@
-name: Run JMeter Tests and Deploy to GitHub Pagest
+name: Run JMeter Tests and Deploy to GitHub Pages
 
 on:
   push:
@@ -22,11 +22,8 @@ jobs:
   run-jmeter-tests:
     runs-on: ubuntu-latest
 
-    env:
-      JMETER_VERSION: 5.5
-
     outputs:
-      TIMESTAMP: ${{ steps.set-timestamp.outputs.TIMESTAMP }}  # Corrected output reference
+      TIMESTAMP: ${{ steps.set-timestamp.outputs.TIMESTAMP }}  # ✅ Correctly expose the TIMESTAMP output
 
     steps:
       - name: Checkout code
@@ -40,16 +37,23 @@ jobs:
 
       - name: Install JMeter
         run: |
-          wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${{ env.JMETER_VERSION }}.tgz
-          tar -xzf apache-jmeter-${{ env.JMETER_VERSION }}.tgz
-          sudo mv apache-jmeter-${{ env.JMETER_VERSION }} /opt/jmeter
+          wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.5.tgz
+          tar -xzf apache-jmeter-5.5.tgz
+          sudo mv apache-jmeter-5.5 /opt/jmeter
 
       - name: Add JMeter to PATH
-        run: |
-          echo "PATH=$PATH:/opt/jmeter/bin" >> $GITHUB_ENV
+        run: echo "PATH=$PATH:/opt/jmeter/bin" >> $GITHUB_ENV
 
       - name: Verify JMeter version
         run: jmeter --version
+
+      # ✅ Correctly generate and store the timestamp
+      - name: Set Timestamp
+        id: set-timestamp
+        run: |
+          TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
+          echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
+          echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_OUTPUT  # ✅ Expose TIMESTAMP for later use
 
       - name: Set Test Folder
         run: |
@@ -59,14 +63,7 @@ jobs:
             echo "TEST_FOLDER=${{ github.event.inputs.test-folder }}" >> $GITHUB_ENV
           fi
 
-      - name: Set Timestamp
-        id: set-timestamp  # Assign an ID to reference outputs
-        run: |
-          TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
-          echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
-          echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_OUTPUT  # Fix: Correctly set job output
-
-      - name: Run JMeter Test Plans in Selected Folder
+      - name: Run JMeter Test Plans
         run: |
           echo "Using test folder: $TEST_FOLDER"
           mkdir -p ${{ github.workspace }}/report
@@ -81,10 +78,10 @@ jobs:
             mv "$report_dir" ${{ github.workspace }}/report/$(basename "${test_plan%.jmx}")
           done
 
-      - name: Upload All HTML Reports as a Single Artifact
+      - name: Upload JMeter Reports as an Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: jmeter-reports-${{ env.TIMESTAMP }}  # Use the generated timestamp in artifact name
+          name: jmeter-reports-${{ steps.set-timestamp.outputs.TIMESTAMP }}  # ✅ Use correctly stored timestamp
           path: ${{ github.workspace }}/report
           retention-days: 1
 
@@ -99,13 +96,13 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Get Timestamp from Previous Job
-        run: echo "Using timestamp: ${{ needs.run-jmeter-tests.outputs.TIMESTAMP }}"
+      - name: Debug Timestamp Value
+        run: echo "TIMESTAMP from previous job: ${{ needs.run-jmeter-tests.outputs.TIMESTAMP }}"
 
       - name: Download JMeter Reports Artifact
         uses: actions/download-artifact@v3
         with:
-          name: jmeter-reports-${{ needs.run-jmeter-tests.outputs.TIMESTAMP }}  # Correctly reference the artifact with timestamp
+          name: jmeter-reports-${{ needs.run-jmeter-tests.outputs.TIMESTAMP }}  # ✅ Correctly reference timestamped artifact
           path: reports
 
       - name: Setup Pages
@@ -113,7 +110,6 @@ jobs:
 
       - name: Create index.html
         run: |
-          echo "Creating index.html with links to reports..."
           echo "<html><body><h1>JMeter Test Reports</h1><ul>" > reports/index.html
           for report_dir in reports/*; do
             if [ -d "$report_dir" ]; then
