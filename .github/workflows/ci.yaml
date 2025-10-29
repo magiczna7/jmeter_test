@@ -44,12 +44,15 @@ jobs:
       - name: Verify JMeter version
         run: jmeter --version
 
+      # ---------------- Fixed Test Folder Step ----------------
       - name: Set Test Folder
         run: |
-          if [[ -z "${{ github.event.inputs.test-folder }}" ]]; then
+          TEST_FOLDER_INPUT="${{ github.event.inputs.test-folder }}"
+          if [[ -z "$TEST_FOLDER_INPUT" ]]; then
             echo "TEST_FOLDER=test_plans" >> $GITHUB_ENV
           else
-            echo "TEST_FOLDER=${{ github.event.inputs.test-folder }}" >> $GITHUB_ENV
+            echo "TEST_FOLDER=$TEST_FOLDER_INPUT" >> $GITHUB_ENV
+          fi
 
       # ---------------- Plugin Manager & Global Plugins ----------------
       - name: Install JMeter Plugins Manager and Required Plugins
