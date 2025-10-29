@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6">
   <hashTree>
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan" enabled="true">
-      <stringProp name="TestPlan.comments"></stringProp>
+      <stringProp name="TestPlan.comments">Test plugin jpgc‑tst</stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments">
@@ -11,7 +11,6 @@
       <stringProp name="TestPlan.user_define_classpath"></stringProp>
     </TestPlan>
     <hashTree>
-      <!-- Thread Group -->
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel">
@@ -27,11 +26,22 @@
         <stringProp name="ThreadGroup.delay"></stringProp>
       </ThreadGroup>
       <hashTree>
-        <!-- Plugin Sampler: replace with your plugin class -->
-        <kg.apc.jmeter.samplers.JSR223Sampler guiclass="TestBeanGUI" testclass="kg.apc.jmeter.samplers.JSR223Sampler" testname="Plugin Test Sampler" enabled="true">
-          <stringProp name="script">log.info("Plugin loaded successfully!");</stringProp>
-          <stringProp name="scriptLanguage">groovy</stringProp>
-        </kg.apc.jmeter.samplers.JSR223Sampler>
+        <!-- Throughput Shaping Timer plugin element -->
+        <kg.apc.jmeter.timers.UltimateThroughputTimer guiclass="kg.apc.jmeter.timers.gui.UltimateThroughputTimerGui" 
+            testclass="kg.apc.jmeter.timers.UltimateThroughputTimer" testname="Throughput Shaping Timer" enabled="true">
+          <!-- Minimal required properties for the timer -->
+          <stringProp name="kg.apc.jmeter.timers.UltimateThroughputTimer.target_throughput">10</stringProp>
+          <stringProp name="kg.apc.jmeter.timers.UltimateThroughputTimer.duration">10</stringProp>
+        </kg.apc.jmeter.timers.UltimateThroughputTimer>
+        <hashTree/>
+        <!-- Simple HTTP sampler to make something happen -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Dummy HTTP Sampler" enabled="true">
+          <stringProp name="HTTPSampler.domain">example.com</stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.path">/</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+        </HTTPSamplerProxy>
         <hashTree/>
       </hashTree>
     </hashTree>
