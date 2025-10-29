@@ -71,9 +71,8 @@ jobs:
          --tool org.jmeterplugins.repository.PluginManagerCMD \
          install jpgc-tst
 
-         # Copy the downloaded plugin JAR(s) from cache into JMeter lib/ext
          mkdir -p /opt/jmeter/lib/ext
-         cp ~/.jmeter/plugins/*jpgc-tst*.jar /opt/jmeter/lib/ext/
+         cp /home/runner/.jmeter/plugins-cache/*.jar /opt/jmeter/lib/ext/
 
       - name: Verify global plugin installation
         run: |
