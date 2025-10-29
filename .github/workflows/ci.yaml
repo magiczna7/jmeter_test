@@ -67,22 +67,25 @@ jobs:
           else
             echo "TEST_FOLDER=${{ github.event.inputs.test-folder }}" >> $GITHUB_ENV
           fi
+           
       - name: Install JMeter Plugins Manager
         run: |
-          sudo mkdir -p /opt/jmeter/lib/ext
-          sudo wget -q https://repo1.maven.org/maven2/kg/apc/jmeter-plugins-manager/1.9/jmeter-plugins-manager-1.9.jar -O /opt/jmeter/lib/ext/jmeter-plugins-manager.jar
+          # Download Plugins Manager and CmdRunner dependencies
+          wget https://jmeter-plugins.org/get/ -O /opt/jmeter/lib/ext/jmeter-plugins-manager.jar
+          wget https://repo1.maven.org/maven2/kg/apc/cmdrunner/2.2/cmdrunner-2.2.jar -O /opt/jmeter/lib/cmdrunner-2.2.jar
 
-      - name: Install JMeter CMDRunner
+      - name: Install jpgc-standard plugin
         run: |
-          sudo mkdir -p /opt/jmeter/lib
-          sudo wget -q https://repo1.maven.org/maven2/kg/apc/cmdrunner/2.2/cmdrunner-2.2.jar -O /opt/jmeter/lib/cmdrunner-2.2.jar
+          # Use cmdrunner + PluginManagerCLI to install plugins
+          java -cp /opt/jmeter/lib/ext/jmeter-plugins-manager.jar:/opt/jmeter/lib/cmdrunner-2.2.jar \
+            org.jmeterplugins.repository.PluginManagerCLI \
+            --install jpgc-standard
 
-      - name: Install plugins
+      - name: Verify installation
         run: |
-          java -cp /opt/jmeter/lib/ext/jmeter-plugins-manager.jar:/opt/jmeter/lib/cmdrunner-2.2.jar org.jmeterplugins.repository.PluginManagerCLI --install jpgc-standard
-
-          # Verify installation
-          java -cp /opt/jmeter/lib/ext/jmeter-plugins-manager.jar:/opt/jmeter/lib/cmdrunner-2.2.jar org.jmeterplugins.repository.PluginManagerCMD status
+          /opt/jmeter/bin/jmeter --version
+          echo "Installed plugins:"
+          ls /opt/jmeter/lib/ext | grep jpgc || echo "No jpgc plugins found"
 
       - name: Run JMeter Test Plans
         run: |
