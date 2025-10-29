@@ -80,7 +80,6 @@ jobs:
       - name: Refresh JMeter Plugins Cache
         run: |
           /opt/jmeter/bin/PluginsManagerCMD.sh status
-          /opt/jmeter/bin/PluginsManagerCMD.sh upgrade
 
       # ---------------- Test Plan Execution ----------------
       - name: Run JMeter Test Plans
