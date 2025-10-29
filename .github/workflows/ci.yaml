@@ -51,6 +51,22 @@ jobs:
           else
             echo "TEST_FOLDER=${{ github.event.inputs.test-folder }}" >> $GITHUB_ENV
           fi
+      - name: Install JMeter Plugins Manager and Plugins
+        run: |
+          # Make sure folder structure exists
+          mkdir -p jmeter/lib/ext jmeter/lib
+
+          # Download Plugin Manager and cmdrunner dependencies
+          wget https://repo1.maven.org/maven2/kg/apc/jmeter-plugins-manager/1.9/jmeter-plugins-manager-1.9.jar -P jmeter/lib/ext
+          wget https://repo1.maven.org/maven2/kg/apc/cmdrunner/2.2/cmdrunner-2.2.jar -P jmeter/lib
+
+          # Install desired plugins (comma-separated IDs)
+          java -cp "jmeter/lib/ext/jmeter-plugins-manager-1.9.jar:jmeter/lib/cmdrunner-2.2.jar" \
+          org.jmeterplugins.repository.PluginManagerCMD install jpgc-casutg,jpgc-tst,jpgc-json,jpgc-graphs-basic,jpgc-functions
+
+          #  Verify installation (optional)
+          java -cp "jmeter/lib/ext/jmeter-plugins-manager-1.9.jar:jmeter/lib/cmdrunner-2.2.jar" org.jmeterplugins.repository.PluginManagerCMD status
+
 
       - name: Run JMeter Test Plans
         run: |
