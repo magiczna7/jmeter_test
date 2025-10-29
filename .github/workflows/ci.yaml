@@ -60,9 +60,9 @@ jobs:
           wget https://repo1.maven.org/maven2/kg/apc/jmeter-plugins-manager/1.9/jmeter-plugins-manager-1.9.jar -P jmeter/lib/ext
           wget https://repo1.maven.org/maven2/kg/apc/cmdrunner/2.2/cmdrunner-2.2.jar -P jmeter/lib
 
-          # Install desired plugins (comma-separated IDs)
+          # Install plugins (correct class: PluginManagerCLI)
           java -cp "jmeter/lib/ext/jmeter-plugins-manager-1.9.jar:jmeter/lib/cmdrunner-2.2.jar" \
-          org.jmeterplugins.repository.PluginManagerCMD install jpgc-casutg,jpgc-tst,jpgc-json,jpgc-graphs-basic,jpgc-functions
+          org.jmeterplugins.repository.PluginManagerCLI install jpgc-casutg,jpgc-tst,jpgc-json,jpgc-graphs-basic,jpgc-functions
 
           #  Verify installation (optional)
           java -cp "jmeter/lib/ext/jmeter-plugins-manager-1.9.jar:jmeter/lib/cmdrunner-2.2.jar" org.jmeterplugins.repository.PluginManagerCMD status
