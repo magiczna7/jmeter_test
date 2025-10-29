@@ -53,16 +53,12 @@ jobs:
           fi
       - name: Install JMeter Plugins Manager and Plugins
         run: |
-          # Make sure folder structure exists
-          mkdir -p jmeter/lib/ext jmeter/lib
+          # Download Plugin Manager and CmdRunner
+          wget -q https://repo1.maven.org/maven2/kg/apc/jmeter-plugins-manager/1.9/jmeter-plugins-manager-1.9.jar -O jmeter/lib/ext/jmeter-plugins-manager.jar
+          wget -q https://repo1.maven.org/maven2/kg/apc/cmdrunner/2.2/cmdrunner-2.2.jar -O jmeter/lib/cmdrunner-2.2.jar
 
-          # Download Plugin Manager and cmdrunner dependencies
-          wget https://repo1.maven.org/maven2/kg/apc/jmeter-plugins-manager/1.9/jmeter-plugins-manager-1.9.jar -P jmeter/lib/ext
-          wget https://repo1.maven.org/maven2/kg/apc/cmdrunner/2.2/cmdrunner-2.2.jar -P jmeter/lib
-
-          # Install plugins (correct class: PluginManagerCLI)
-          java -cp "jmeter/lib/ext/jmeter-plugins-manager-1.9.jar:jmeter/lib/cmdrunner-2.2.jar" \
-          org.jmeterplugins.repository.PluginManagerCLI install jpgc-casutg,jpgc-tst,jpgc-json,jpgc-graphs-basic,jpgc-functions
+          # Initialize Plugin Manager
+          java -cp jmeter/lib/ext/jmeter-plugins-manager.jar;jmeter/lib/cmdrunner-2.2.jar org.jmeterplugins.repository.PluginManagerCMD install jpgc-standard
 
           #  Verify installation (optional)
           java -cp "jmeter/lib/ext/jmeter-plugins-manager-1.9.jar:jmeter/lib/cmdrunner-2.2.jar" org.jmeterplugins.repository.PluginManagerCMD status
