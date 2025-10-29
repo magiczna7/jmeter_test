@@ -54,17 +54,17 @@ jobs:
            
       - name: Install JMeter Plugins Manager
         run: |
-          # Download the plugins manager JAR into lib/ext
-          wget https://jmeter-plugins.org/get/PluginsManager.jar -O /opt/jmeter/lib/ext/jmeter-plugins-manager.jar
-          # Download cmdrunner dependency into lib
-          wget https://repo1.maven.org/maven2/kg/apc/cmdrunner/2.2/cmdrunner-2.2.jar -O /opt/jmeter/lib/cmdrunner-2.2.jar
+          wget https://repo1.maven.org/maven2/kg/apc/jmeter-plugins-manager/1.3/jmeter-plugins-manager-1.3.jar \
+            -O /opt/jmeter/lib/ext/jmeter-plugins-manager-1.3.jar
+          wget https://repo1.maven.org/maven2/kg/apc/cmdrunner/2.2/cmdrunner-2.2.jar \
+            -O /opt/jmeter/lib/cmdrunner-2.2.jar
 
-      - name: Generate PluginsManagerCMD helper scripts
+      - name: Generate Plugins Manager CLI helper
         run: |
-          java -cp /opt/jmeter/lib/ext/jmeter-plugins-manager.jar:/opt/jmeter/lib/cmdrunner-2.2.jar \
+          java -cp /opt/jmeter/lib/ext/jmeter-plugins-manager-1.3.jar:/opt/jmeter/lib/cmdrunner-2.2.jar \
             org.jmeterplugins.repository.PluginManagerCMDInstaller
 
-      - name: Install jpgc‑standard plugin via PluginsManagerCMD
+      - name: Install jpgc‑standard plugin
         run: |
           java -jar /opt/jmeter/lib/cmdrunner-2.2.jar \
             --tool org.jmeterplugins.repository.PluginManagerCMD \
