@@ -71,9 +71,6 @@ jobs:
          --tool org.jmeterplugins.repository.PluginManagerCMD \
          install jpgc-tst
 
-         mkdir -p /opt/jmeter/lib/ext
-         cp /home/runner/.jmeter/plugins-cache/*.jar /opt/jmeter/lib/ext/
-
       - name: Verify global plugin installation
         run: |
           echo "Installed plugin JARs in lib/ext:"
@@ -84,6 +81,11 @@ jobs:
           echo "Using test folder: $TEST_FOLDER"
           mkdir -p ${{ github.workspace }}/report
           for test_plan in ${{ github.workspace }}/$TEST_FOLDER/*.jmx; do
+            echo "Installing required plugins for $test_plan"
+            java -jar /opt/jmeter/lib/cmdrunner-2.2.jar \
+            --tool org.jmeterplugins.repository.PluginManagerCMD \
+            install-for-jmx "$test_plan"
+            
             echo "Running test plan: $test_plan"
             result_file="${test_plan%.jmx}.jtl"
             jmeter -n -t "$test_plan" -l "$result_file"
