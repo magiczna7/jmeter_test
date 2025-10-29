@@ -63,7 +63,7 @@ jobs:
 
       - name: Install plugins
         run: |
-          java -cp /opt/jmeter/lib/ext/jmeter-plugins-manager.jar:/opt/jmeter/lib/cmdrunner-2.2.jar org.jmeterplugins.repository.PluginManagerCMD install jpgc-standard
+          java -cp /opt/jmeter/lib/ext/jmeter-plugins-manager.jar:/opt/jmeter/lib/cmdrunner-2.2.jar org.jmeterplugins.repository.PluginManagerCLI --install jpgc-standard
 
           # Verify installation
           java -cp /opt/jmeter/lib/ext/jmeter-plugins-manager.jar:/opt/jmeter/lib/cmdrunner-2.2.jar org.jmeterplugins.repository.PluginManagerCMD status
