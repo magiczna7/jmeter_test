@@ -70,22 +70,27 @@ jobs:
            
       - name: Install JMeter Plugins Manager
         run: |
-          # Download Plugins Manager and CmdRunner dependencies
-          wget https://jmeter-plugins.org/get/ -O /opt/jmeter/lib/ext/jmeter-plugins-manager.jar
+          # Download the plugins manager JAR into lib/ext
+          wget https://jmeter-plugins.org/get/PluginsManager.jar -O /opt/jmeter/lib/ext/jmeter-plugins-manager.jar
+          # Download cmdrunner dependency into lib
           wget https://repo1.maven.org/maven2/kg/apc/cmdrunner/2.2/cmdrunner-2.2.jar -O /opt/jmeter/lib/cmdrunner-2.2.jar
 
-      - name: Install jpgc-standard plugin
+      - name: Generate PluginsManagerCMD helper scripts
         run: |
-          # Use cmdrunner + PluginManagerCLI to install plugins
           java -cp /opt/jmeter/lib/ext/jmeter-plugins-manager.jar:/opt/jmeter/lib/cmdrunner-2.2.jar \
-            org.jmeterplugins.repository.PluginManagerCLI \
-            --install jpgc-standard
+            org.jmeterplugins.repository.PluginManagerCMDInstaller
+
+      - name: Install jpgc‑standard plugin via PluginsManagerCMD
+        run: |
+          java -jar /opt/jmeter/lib/cmdrunner-2.2.jar \
+            --tool org.jmeterplugins.repository.PluginManagerCMD \
+            --install jpgc‑standard
 
       - name: Verify installation
         run: |
           /opt/jmeter/bin/jmeter --version
-          echo "Installed plugins:"
-          ls /opt/jmeter/lib/ext | grep jpgc || echo "No jpgc plugins found"
+          echo "Installed plugins in lib/ext:"
+          ls /opt/jmeter/lib/ext | grep jpgc || echo "No jpgc plugin files found"
 
       - name: Run JMeter Test Plans
         run: |
