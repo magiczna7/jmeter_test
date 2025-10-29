@@ -51,40 +51,36 @@ jobs:
           else
             echo "TEST_FOLDER=${{ github.event.inputs.test-folder }}" >> $GITHUB_ENV
           fi
-           
-      - name: Install JMeter Plugins Manager
-        run: |
-          wget https://repo1.maven.org/maven2/kg/apc/jmeter-plugins-manager/1.3/jmeter-plugins-manager-1.3.jar \
-            -O /opt/jmeter/lib/ext/jmeter-plugins-manager-1.3.jar
-          wget https://repo1.maven.org/maven2/kg/apc/cmdrunner/2.2/cmdrunner-2.2.jar \
-            -O /opt/jmeter/lib/cmdrunner-2.2.jar
 
-      - name: Generate PluginsManagerCMD helper
+      # ---------------- Fixed Plugin Manager Installation ----------------
+      - name: Install JMeter Plugins Manager and Required Plugins
         run: |
-         java -cp /opt/jmeter/lib/ext/jmeter-plugins-manager-1.3.jar:/opt/jmeter/lib/cmdrunner-2.2.jar \
-         org.jmeterplugins.repository.PluginManagerCMDInstaller
+          # Ensure directories exist
+          sudo mkdir -p /opt/jmeter/lib/ext /opt/jmeter/lib
 
-      - name: Install specific plugin globally (jpgc-tst)
-        run: |
-         # Download jpgc-tst plugin to plugin cache
-         java -jar /opt/jmeter/lib/cmdrunner-2.2.jar \
-         --tool org.jmeterplugins.repository.PluginManagerCMD \
-         install jpgc-tst
+          # Download latest JMeter Plugins Manager and cmdrunner
+          wget https://repo1.maven.org/maven2/kg/apc/jmeter-plugins-manager/1.9/jmeter-plugins-manager-1.9.jar -P /opt/jmeter/lib/ext
+          wget https://repo1.maven.org/maven2/kg/apc/cmdrunner/2.2/cmdrunner-2.2.jar -P /opt/jmeter/lib
 
-      - name: Verify global plugin installation
-        run: |
-          echo "Installed plugin JARs in lib/ext:"
-          ls /opt/jmeter/lib/ext | grep jpgc-tst || echo "jpgc-tst plugin not found!"
+          # Install helper scripts (creates PluginsManagerCMD.sh)
+          java -cp /opt/jmeter/lib/ext/jmeter-plugins-manager-1.9.jar:/opt/jmeter/lib/cmdrunner-2.2.jar \
+            org.jmeterplugins.repository.PluginManagerCMDInstaller
 
+          # Install global plugins (example: jpgc-tst)
+          /opt/jmeter/bin/PluginsManagerCMD.sh install jpgc-tst
+
+          # Optional: verify installed plugins
+          /opt/jmeter/bin/PluginsManagerCMD.sh status
+
+      # ---------------- Test Plan Execution ----------------
       - name: Run JMeter Test Plans
         run: |
           echo "Using test folder: $TEST_FOLDER"
           mkdir -p ${{ github.workspace }}/report
+          
           for test_plan in ${{ github.workspace }}/$TEST_FOLDER/*.jmx; do
             echo "Installing required plugins for $test_plan"
-            java -jar /opt/jmeter/lib/cmdrunner-2.2.jar \
-            --tool org.jmeterplugins.repository.PluginManagerCMD \
-            install-for-jmx "$test_plan"
+            /opt/jmeter/bin/PluginsManagerCMD.sh install-for-jmx "$test_plan"
             
             echo "Running test plan: $test_plan"
             result_file="${test_plan%.jmx}.jtl"
