@@ -64,7 +64,7 @@ jobs:
             org.jmeterplugins.repository.PluginManagerCMDInstaller
 
           # Install safe modern plugins (avoid outdated ones that cause CannotResolveClassException)
-          /opt/jmeter/bin/PluginsManagerCMD.sh install jpgc-standard,jpgc-casutg,jpgc-graphs-basic
+          /opt/jmeter/bin/PluginsManagerCMD.sh install jpgc-standard,jpgc-casutg,jpgc-graphs-basic,jpgc-dummy
 
           # Verify installed plugins
           /opt/jmeter/bin/PluginsManagerCMD.sh status
