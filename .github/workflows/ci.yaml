@@ -59,20 +59,26 @@ jobs:
           wget https://repo1.maven.org/maven2/kg/apc/cmdrunner/2.2/cmdrunner-2.2.jar \
             -O /opt/jmeter/lib/cmdrunner-2.2.jar
 
-      - name: Generate Plugins Manager CLI helper
+      - name: Generate PluginsManagerCMD helper
         run: |
-          java -cp /opt/jmeter/lib/ext/jmeter-plugins-manager-1.3.jar:/opt/jmeter/lib/cmdrunner-2.2.jar \
-            org.jmeterplugins.repository.PluginManagerCMDInstaller
+         java -cp /opt/jmeter/lib/ext/jmeter-plugins-manager-1.3.jar:/opt/jmeter/lib/cmdrunner-2.2.jar \
+         org.jmeterplugins.repository.PluginManagerCMDInstaller
 
-      - name: Install jpgc‑standard plugin via PluginsManagerCMD
+      - name: Install specific plugin globally (jpgc-tst)
         run: |
-         java -jar /opt/jmeter/lib/cmdrunner-2.2.jar --tool org.jmeterplugins.repository.PluginManagerCMD install jpgc-tst
+         # Download jpgc-tst plugin to plugin cache
+         java -jar /opt/jmeter/lib/cmdrunner-2.2.jar \
+         --tool org.jmeterplugins.repository.PluginManagerCMD \
+         install jpgc-tst
 
-      - name: Verify installation
+         # Copy the downloaded plugin JAR(s) from cache into JMeter lib/ext
+         mkdir -p /opt/jmeter/lib/ext
+         cp ~/.jmeter/plugins/*jpgc-tst*.jar /opt/jmeter/lib/ext/
+
+      - name: Verify global plugin installation
         run: |
-          /opt/jmeter/bin/jmeter --version
-          echo "Installed plugins in lib/ext:"
-          ls /opt/jmeter/lib/ext | grep jpgc || echo "No jpgc plugin files found"
+          echo "Installed plugin JARs in lib/ext:"
+          ls /opt/jmeter/lib/ext | grep jpgc-tst || echo "jpgc-tst plugin not found!"
 
       - name: Run JMeter Test Plans
         run: |
