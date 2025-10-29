@@ -102,7 +102,7 @@ jobs:
 
     steps:
       - name: Download JMeter Reports Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: jmeter-reports
           path: reports
@@ -122,7 +122,7 @@ jobs:
           echo "</ul></body></html>" >> reports/index.html
 
       - name: Upload Reports to GitHub Pages
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: reports
 
