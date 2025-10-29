@@ -44,6 +44,22 @@ jobs:
       - name: Verify JMeter version
         run: jmeter --version
 
+      - name: Install JMeter Plugins Manager
+        run: |
+          wget https://jmeter-plugins.org/get/ -O /opt/jmeter/lib/ext/jmeter-plugins-manager.jar
+          wget https://repo1.maven.org/maven2/kg/apc/cmdrunner/2.2/cmdrunner-2.2.jar -O /opt/jmeter/lib/cmdrunner-2.2.jar
+
+      - name: Install jpgc-standard plugin
+        run: |
+          java -cp /opt/jmeter/lib/ext/jmeter-plugins-manager.jar org.jmeterplugins.repository.PluginManagerCMDInstaller
+          java -jar /opt/jmeter/lib/ext/jmeter-plugins-manager.jar --install jpgc-standard
+
+      - name: Verify installation
+        run: |
+          /opt/jmeter/bin/jmeter --version
+          echo "Installed plugins:"
+          ls /opt/jmeter/lib/ext | grep jpgc
+
       - name: Set Test Folder
         run: |
           if [[ -z "${{ github.event.inputs.test-folder }}" ]]; then
