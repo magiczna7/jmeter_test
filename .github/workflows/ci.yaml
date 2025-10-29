@@ -66,8 +66,7 @@ jobs:
 
       - name: Install jpgc‑standard plugin via PluginsManagerCMD
         run: |
-         java -jar /opt/jmeter/lib/cmdrunner-2.2.jar --tool org.jmeterplugins.repository.PluginManagerCMD install jpgc‑standard
-
+         java -jar /opt/jmeter/lib/cmdrunner-2.2.jar --tool org.jmeterplugins.repository.PluginManagerCMD install jpgc-tst
 
       - name: Verify installation
         run: |
