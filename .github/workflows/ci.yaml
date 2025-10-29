@@ -58,12 +58,14 @@ jobs:
           # Ensure directories exist
           sudo mkdir -p /opt/jmeter/lib/ext /opt/jmeter/lib
 
-          # Download latest JMeter Plugins Manager and cmdrunner
+          # Download JMeter Plugins Manager 1.9
           wget https://repo1.maven.org/maven2/kg/apc/jmeter-plugins-manager/1.9/jmeter-plugins-manager-1.9.jar -P /opt/jmeter/lib/ext
-          wget https://repo1.maven.org/maven2/kg/apc/cmdrunner/2.2/cmdrunner-2.2.jar -P /opt/jmeter/lib
+          
+          # Download cmdrunner 2.3 (matches PluginsManagerCMD.sh)
+          wget https://repo1.maven.org/maven2/kg/apc/cmdrunner/2.3/cmdrunner-2.3.jar -P /opt/jmeter/lib
 
           # Install helper scripts (creates PluginsManagerCMD.sh)
-          java -cp /opt/jmeter/lib/ext/jmeter-plugins-manager-1.9.jar:/opt/jmeter/lib/cmdrunner-2.2.jar \
+          java -cp /opt/jmeter/lib/ext/jmeter-plugins-manager-1.9.jar:/opt/jmeter/lib/cmdrunner-2.3.jar \
             org.jmeterplugins.repository.PluginManagerCMDInstaller
 
           # Install global plugins (example: jpgc-tst)
